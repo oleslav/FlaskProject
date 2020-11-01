@@ -12,6 +12,7 @@
 5. Install package from requirements.txt `pip install -r requirements.txt`
 <br/>
 [more information](https://youtu.be/wTh-D8GTjeA)
+<br/>
 6. Run **`python` path_to_folder/`app.py`**
 7. Drink coffee
 
