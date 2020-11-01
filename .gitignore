@@ -7,3 +7,6 @@ __pycache__/app.cpython-38.pyc
 .idea/inspectionProfiles/Project_Default.xml
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/BlablacarProject.iml
+*venv
+*.idea
+__pycache__/app.cpython-38.pyc
