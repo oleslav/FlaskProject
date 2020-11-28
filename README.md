@@ -1,5 +1,5 @@
 # FlaskProject
-
+Лабораторна робота з ПП. Команда: КИЦАРА, БОЙЧУК, ГОНЧАРЕНКО.
 ## Requirements
 - Python 3.8.2
 - virtualenv
