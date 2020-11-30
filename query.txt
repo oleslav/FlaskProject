@@ -1,0 +1,29 @@
+USE pp_orm;
+
+CREATE TABLE user(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name varchar(20) NOT NULL,
+    password varchar(20) NOT NULL
+);
+
+CREATE TABLE tag(
+    id INT PRIMARY KEY AUTO_INCREMENT ,
+    name varchar(255) NOT NULL
+);
+
+
+CREATE TABLE note (
+    id INT PRIMARY KEY AUTO_INCREMENT ,
+    text varchar(404) NOT NULL ,
+    numberEdits int,
+    tag INT,
+    foreign key (tag) REFERENCES tag (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE noteStatistic(
+    userId INT,
+    noteId INT,
+    time DATETIME,
+    FOREIGN KEY (userId) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE ,
+    FOREIGN KEY (noteId) REFERENCES note(id) ON DELETE CASCADE ON UPDATE CASCADE
+)

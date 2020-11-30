@@ -10,3 +10,9 @@ __pycache__/app.cpython-38.pyc
 *venv
 *.idea
 __pycache__/app.cpython-38.pyc
+/alembic/
+alembic.ini
+__pycache__/models.cpython-38.pyc
+__pycache__/app.cpython-37.pyc
+__pycache__/models.cpython-37.pyc
+alembic.ini
