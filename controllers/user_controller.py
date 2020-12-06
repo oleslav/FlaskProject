@@ -4,6 +4,10 @@ from config import *
 from models import *
 
 
+def get_current_user():
+    return User.query.filter_by(username=get_jwt_identity()).first()
+
+
 @app.route('/user', methods=['POST'])
 def create_user():
     if not request.is_json:
@@ -13,11 +17,11 @@ def create_user():
     if not username:
         return jsonify({
             "errors": [{
-                    "status": "400",
-                    "source": {"pointer": None},
-                    "title": "Invalid Attribute",
-                    "detail": "Missing username parameter"
-                }]}), 400
+                "status": "400",
+                "source": {"pointer": None},
+                "title": "Invalid Attribute",
+                "detail": "Missing username parameter"
+            }]}), 400
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
     if username == '' or password == '':
@@ -48,4 +52,9 @@ def user_logout():
 
 @app.route('/userstats/<user_id>', methods=['GET'])
 def get_userstats_by_id(user_id):
-    return ''
+    user = User.query.filter_by(id=user_id).first()
+    statistic = NoteStatistic.query.filter_by(userId=user_id).all()
+    statistic_list = {'statistic': []}
+    for var in statistic:
+        statistic_list['statistic'].append({'user Id': var.time, 'note Id': var.noteId})
+    return jsonify(statistic_list)

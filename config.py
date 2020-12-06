@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -9,10 +13,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{user}:{password
     user='root',
     password='root',
     server='localhost',
-    database='Swaggerdb'
+    database='pp_orm'
 )
 
+jwt = JWTManager(app)
 db = SQLAlchemy(app)
 engine = db.engine
 Base = db.Model
 jwt = JWTManager(app)
+
