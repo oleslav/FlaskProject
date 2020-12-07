@@ -47,10 +47,11 @@ def user_login():
 
 @app.route('/user/logout', methods=['GET'])
 def user_logout():
-    return ''
+    return jsonify({"msg": "Successfully, you have logged out"}), 200
 
 
 @app.route('/notestats/<note_id>', methods=['GET'])
+@jwt_required
 def get_notestats_by_id(note_id):
     note = User.query.filter_by(id=note_id).first()
     statistic = NoteStatistic.query.filter_by(noteId=note_id).all()
@@ -61,6 +62,7 @@ def get_notestats_by_id(note_id):
 
 
 @app.route('/userstats/<user_id>', methods=['GET'])
+@jwt_required
 def get_userstats_by_id(user_id):
     user = User.query.filter_by(id=user_id).first()
     statistic = NoteStatistic.query.filter_by(userId=user_id).all()

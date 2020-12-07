@@ -50,3 +50,16 @@ class NoteStatistic(Base):
 
     def __str__(self):
         return f"<NoteStatistic: {self.id}>"
+
+
+class Permisions(Base):
+    id = db.Column(db.INTEGER, primary_key=True)
+
+    noteId = db.Column(db.INTEGER, db.ForeignKey(Note.id), nullable=False)
+    note = db.relationship(Note, backref=db.backref("note"))
+
+    userId = db.Column(db.INTEGER, db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User, backref=db.backref("user"))
+    noteId = db.Column(db.INTEGER, db.ForeignKey(Note.id), nullable=False)
+    note = db.relationship(Note, backref=db.backref("note"))
+
