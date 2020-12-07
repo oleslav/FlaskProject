@@ -25,11 +25,28 @@ def post_notes():
     text = request.json.get('text', None)
     if text is None:
         return jsonify(msg="Missing data"), 400
-    note = Note(text=text)
+    note = Note(text=text, creator=get_current_user())
     db.session.add(note)
     db.session.add(NoteStatistic(note=note, user=get_current_user()))
     db.session.commit()
     return jsonify({"msg": "Note successfully added"}), 200
+
+@app.route('/notes/<note_id>/adduser', methods=['PUT'])
+@jwt_required
+def add_user_to_control(note_id):
+    user_id = request.json.get('user_id', None)
+    if user_id is None:
+        return jsonify(status='No data'), 400
+    cur_user = get_current_user()
+    cur_note = Note.query.filter_by(id=note_id).first()
+    if cur_note and User.query.filter_by(id=user_id).first():
+        if cur_note.creator_id == cur_user.id:
+            db.session.add(NoteStatistic(user=User.query.filter_by(id=user_id).first(), note=cur_note))
+            db.session.commit()
+            return jsonify(status='added control'), 200
+    else:
+        return jsonify(status='Not found'), 404
+
 
 
 @app.route('/notes/<note_id>', methods=['GET', 'PUT', 'DELETE'])

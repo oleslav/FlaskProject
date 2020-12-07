@@ -34,6 +34,8 @@ class Note(Base):
     numberEdits = db.Column(db.INTEGER, default=0)
     tag_id = db.Column(db.INTEGER, db.ForeignKey(Tag.id))
     tag = db.relationship("Tag", backref=db.backref("tag"))
+    creator_id = db.Column(db.INTEGER, db.ForeignKey(User.id))
+    creator = db.relationship(User)
 
     def __str__(self):
         return f"<Note: {self.id}>"
