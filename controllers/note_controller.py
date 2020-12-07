@@ -15,7 +15,7 @@ def get_notes():
     note = Note.query.all()
     note_list = {'note_list': []}
     for i in note:
-        note_list['note_list'].append({'id': i.id, 'text': i.text, 'edited': i.numberEdits})
+        note_list['note_list'].append({'id': i.id, 'text': i.text, 'created by': i.user_id})
     return jsonify(note_list)
 
 
@@ -27,73 +27,65 @@ def post_notes():
     text = request.json.get('text', None)
     if text is None:
         return jsonify(msg="Missing data"), 400
-    note = Note(text=text, creator=get_current_user())
+    note = Note(text=text, user=get_current_user())
     db.session.add(note)
     db.session.add(NoteStatistic(note=note, user=get_current_user()))
     db.session.commit()
     return jsonify({"msg": "Note successfully added"}), 200
 
-@app.route('/notes/<note_id>/adduser', methods=['PUT'])
+
+@app.route('/notes/<note_id>', methods=['GET'])
 @jwt_required
-def add_user_to_control(note_id):
-    user_id = request.json.get('user_id', None)
-    if user_id is None:
-        return jsonify(status='No data'), 400
-    cur_user = get_current_user()
-    cur_note = Note.query.filter_by(id=note_id).first()
-    if cur_note and User.query.filter_by(id=user_id).first():
-        if cur_note.creator_id == cur_user.id:
-            db.session.add(NoteStatistic(user=User.query.filter_by(id=user_id).first(), note=cur_note))
-            db.session.commit()
-            return jsonify(status='added control'), 200
-    else:
-        return jsonify(status='Not found'), 404
+def get_notes_get_by_id(note_id):
+    note = Note.query.get(note_id)
+    if note is None:
+        return jsonify(status='article not found'), 404
+    return jsonify(article={'id': note.id, 'text': note.text}), 200
 
 
-
-@app.route('/notes/<note_id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/notes/<note_id>', methods=['PUT'])
 @jwt_required
-def notes_get_by_id(note_id):
-    if request.method == 'GET':
-        note = Note.query.get(note_id)
-        if note is None:
-            return jsonify(status='article not found'), 404
-        return jsonify(article={'id': note.id, 'text': note.text}), 200
-    elif request.method == 'PUT':
-        note = Note.query.get(note_id)
-        if note is None:
-            return jsonify(status='article not found'), 404
-        new_text = request.json.get('text', None)
-        if new_text:
-            print(get_current_user())
-            print(get_current_user().id)
-            if NoteStatistic.query.filter(
-                    NoteStatistic.noteId == note_id,
-                    NoteStatistic.noteId == get_current_user().id
-            ) is None:
-                note.numberEdits += 1
+def put_notes_get_by_id(note_id):
+    note = Note.query.get(note_id)
+    if note is None:
+        return jsonify(status='article not found'), 404
 
-            if note.numberEdits > 5:
-                return jsonify({"msg": "Too many editors"}), 403
-            note.text = new_text
-            db.session.add(note)
-            db.session.add(NoteStatistic(note=note, user=get_current_user()))
-            db.session.commit()
-            return jsonify(status='update note'), 202
-        else:
-            return jsonify(status='Bad input data'), 204
-    elif request.method == 'DELETE':
-        note = Note.query.get(note_id)
-        if note is None:
-            return jsonify(status='article not found'), 404
-        note_statistic = NoteStatistic.query.filter_by(note_id=note_id).first()
-        if not note_statistic is None:
-            db.session.delete(note_statistic)
+    note_from_user = Note.query.filter(User.contributors.any(id=note_id)).all()
+    user = get_current_user()
+
+    allowed = False
+    for i in note_from_user:
+        if i.user_id == user.id:
+            allowed = True
+            break
+    if not allowed:
+        return jsonify({"msg": "User dont have a permission to modify note"}), 403
+
+    new_text = request.json.get('text', None)
+    if new_text:
+        new_note = Note(text=new_text)
+        db.session.add(NoteStatistic(note=new_note, user=user))
         db.session.delete(note)
+        db.session.add(new_note)
         db.session.commit()
-        return jsonify(status='deleted'), 204
+        return jsonify(status='update note'), 202
     else:
-        return jsonify({"msg": "Wrong method"}), 404
+        return jsonify(status='Bad input data'), 404
+
+
+@app.route('/notes/<note_id>', methods=['DELETE'])
+@jwt_required
+def delete_notes_get_by_id(note_id):
+    user = get_current_user()
+    note = Note.query.get(note_id)
+    if note is None:
+        return jsonify(status='article not found'), 404
+
+    if user.id != note.user_id:
+        return jsonify({"msg": "User have a permission to delete note"}), 403
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify(status='deleted'), 204
 
 
 @app.route('/permit', methods=['POST'])
@@ -105,19 +97,35 @@ def permit_user_by_id():
     user_id = int(request.json.get('user_id', None))
     note_id = int(request.json.get('note_id', None))
 
+    user = get_current_user()
+    note = Note.query.get(note_id)
+
+    if user is None:
+        return jsonify({"msg": "Bad user_id"}), 404
+
+    if note is None:
+        return jsonify({"msg": "Bad note_id"}), 404
+
+    if user.id != note.user_id:
+        return jsonify({"msg": "User have a permission to add new contributors"}), 403
+
     if (not user_id) or (not note_id):
         return jsonify({"msg": "Bad data"}), 404
-    permisions = Permisions.query.filter_by()
-    if permisions > 5:
+
+    notes_from_note = Note.query.filter(Note.co_authorship.any(id=note_id)).all()
+    notes_from_user = Note.query.filter(User.contributors.any(id=user_id)).all()
+
+    user_counter = 0
+    for i in notes_from_note:
+        for note in notes_from_user:
+            if i.id == note.id:
+                return jsonify({"msg": "Alredy exists"}), 409
+        user_counter += 1
+    if user_counter > 5:
         return jsonify({"msg": "Too many editors"}), 403
 
-    new_user = User.query.filter_by(id=user_id).first()
-
-    if new_user is None:
-        return jsonify({"msg": "Wrong method"}), 406
-
-    permit = Permisions(userId=user_id, noteId=note_id)
-    db.session.add(permit)
+    note = Note.query.get(note_id)
+    user = User.query.get(user_id)
+    note.co_authorship.append(user)
     db.session.commit()
-
     return jsonify({"msg": "New permision for user successfully added"}), 200
