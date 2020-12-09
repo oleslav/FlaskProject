@@ -54,19 +54,21 @@ def put_notes_get_by_id(note_id):
     user = get_current_user()
 
     allowed = False
-    for i in note_from_user:
-        if i.user_id == user.id:
-            allowed = True
-            break
+    if note.user_id == user.id:
+        allowed = True
+    else:
+        for i in note_from_user:
+            if i.id == user.id:
+                allowed = True
+                break
+
     if not allowed:
         return jsonify({"msg": "User dont have a permission to modify note"}), 403
 
     new_text = request.json.get('text', None)
     if new_text:
-        new_note = Note(text=new_text)
-        db.session.add(NoteStatistic(note=new_note, user=user))
-        db.session.delete(note)
-        db.session.add(new_note)
+        db.session.add(NoteStatistic(note=note, user=user))
+        note.text = new_text
         db.session.commit()
         return jsonify(status='update note'), 202
     else:
