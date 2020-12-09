@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{user}:{password
     user='root',
     password='root',
     server='localhost',
-    database='pp_orm'
+    database='Swaggerdb'
 )
 
 jwt = JWTManager(app)

@@ -47,20 +47,11 @@ def user_login():
 
 @app.route('/user/logout', methods=['GET'])
 def user_logout():
-    return ''
-
-
-@app.route('/notestats/<note_id>', methods=['GET'])
-def get_notestats_by_id(note_id):
-    note = User.query.filter_by(id=note_id).first()
-    statistic = NoteStatistic.query.filter_by(noteId=note_id).all()
-    statistic_list = {'statistic': []}
-    for var in statistic:
-        statistic_list['statistic'].append({'time': var.time, 'user Id': var.userId})
-    return jsonify(statistic_list), 200
+    return jsonify({"msg": "Successfully, you have logged out"}), 200
 
 
 @app.route('/userstats/<user_id>', methods=['GET'])
+@jwt_required
 def get_userstats_by_id(user_id):
     user = User.query.filter_by(id=user_id).first()
     statistic = NoteStatistic.query.filter_by(userId=user_id).all()
