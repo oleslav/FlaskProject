@@ -14,7 +14,6 @@
 5. Install package from requirements.txt  `pip install -r requirements.txt` 
 [more information](https://youtu.be/wTh-D8GTjeA)
 6. Run                                    `python app.py`
-7. Drink coffee
 
 Host: http://127.0.0.1:5000/ 
 <br/>
